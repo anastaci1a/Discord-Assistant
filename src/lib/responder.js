@@ -1,4 +1,4 @@
-// system vars
+// system
 
 const responseCases = [
   {
@@ -49,9 +49,9 @@ const responseCases = [
 ];
 
 
-// export function
+// exports
 
-function responder(res, code, data = {}, message = "") {
+export default function responder(res, code, data = {}, message = "") {
   let response = responseCases.find(c => c.code === code);
 
   // create the base response utilizing the found case
@@ -73,8 +73,3 @@ function responder(res, code, data = {}, message = "") {
 
   res.status(baseResponse.code).json(baseResponse);
 }
-
-
-// exports
-
-module.exports = responder;

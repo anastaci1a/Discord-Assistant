@@ -1,11 +1,11 @@
 // dependencies
 
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 const endpoint = '/api/chat';
 
-const auth = require('@lib/auth');
-const chat = require('@controllers/chatController');
+import * as auth from '../lib/auth.js';
+import * as chat from '../controllers/chatController.js';
 
 
 // router management
@@ -43,4 +43,4 @@ router.post('/prompt', chat.prompt);
 
 // exports
 
-module.exports = { endpoint, router };
+export { endpoint, router };

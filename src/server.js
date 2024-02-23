@@ -1,25 +1,27 @@
 // dependencies
 
-require('express-async-errors');
-const express = require('express');
-const app = express();
-const { getModulesInDirectory } = require('@lib/file-manager');
-const responder = require('@lib/responder');
+import 'express-async-errors';
+import express from 'express';
+
+import { getModulesInDirectory } from './lib/file-manager.js';
+import responder from './lib/responder.js';
 
 
-// app setup
+// export
 
-app.use(express.json());
+export default async function setupApp() {
+  const app = express();
+  app.use(express.json());
 
-const routers = getModulesInDirectory('./routes');
-for (let router of routers) app.use(router.endpoint, router.router);
+  const routers = await getModulesInDirectory('./routes');
+  for (let router of routers) {
+    app.use(router.endpoint, router.router);
+  }
 
-app.use((error, req, res, next) => {
-  console.error(error.stack);
-  responder(res, 500, { "stack": error.stack });
-});
+  app.use((error, req, res, next) => {
+    console.error(error.stack);
+    responder(res, 500, { "stack": error.stack });
+  });
 
-
-// exports
-
-module.exports = app;
+  return app;
+}

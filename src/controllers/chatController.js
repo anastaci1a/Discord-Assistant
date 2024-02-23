@@ -1,15 +1,14 @@
 // dependencies
 
-const express = require('express');
+import express from 'express';
 
-const fm = require('@lib/file-manager');
-const openai = require('@lib/openai');
-const responder = require('@lib/responder');
+import * as fm from '../lib/file-manager.js';
+import * as openai from '../lib/openai.js';
+import responder from '../lib/responder.js';
+import { allAreTrue } from '../lib/utils.js';
 
-const { allAreTrue } = require('@lib/utils');
 
-
-// system functions
+// system
 
 let __systemIsReadyOverride = false;
 async function __systemIsReady(req, res, next) {
@@ -79,45 +78,40 @@ const chats = new openai.ChatHub();
 async function __summarizePastMessages(chatName) {} // TODO
 
 
-// export functions
+// exports
 
-async function systemIsReady(req, res, next) {
+export async function systemIsReady(req, res, next) {
   return await __systemIsReady(req, res, next);
 }
 
-async function getChatdata(req, res) {
+export async function getChatdata(req, res) {
   responder(res, 200, chats.getJson());
 }
 
-async function ask(req, res) {
+export async function ask(req, res) {
   const chat = chats.get(req.query.chat);
   const response = await chatter.ask(req.query);
   __saveChatdata(true);
   responder(res, 201, response);
 }
 
-async function addMessage(req, res) {
+export async function addMessage(req, res) {
   const chat = chats.get(req.query.chat);
   chatter.addMessage(req.query);
   __saveChatdata(true);
   responder(res, 200);
 }
 
-async function prompt(req, res) {
+export async function prompt(req, res) {
   const chat = chats.get(req.query.chat);
   const response = await chatter.prompt();
   __saveChatdata(true);
   responder(res, 201, response);
 }
 
-async function addConversation(req, res) {
+export async function addConversation(req, res) {
   __addConversation(req.query.chat);
   responder(res, 201);
 }
 
-async function deleteConversation(req, res) {}
-
-
-// exports
-
-module.exports = { systemIsReady, getChatdata, ask, addMessage, prompt, addConversation, deleteConversation };
+export async function deleteConversation(req, res) {}

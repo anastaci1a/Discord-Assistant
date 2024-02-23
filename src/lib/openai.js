@@ -1,10 +1,11 @@
 // dependencies
 
-const axios = require('axios');
-const fm = require('@lib/file-manager')
-const { dateTime } = require('@lib/utils')
+import axios from 'axios';
+import * as fm from './file-manager.js';
+import { dateTime } from './utils.js';
 
-// system vars
+
+// system
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -112,7 +113,7 @@ async function __fetchAPI(url, payload) {
 }
 
 
-// export functions
+// exports
 
 class ChatHub {
   constructor() {
@@ -302,4 +303,4 @@ async function chatCompletion(messages, params = {}, errorRetryCount = 0) {
 
 // exports
 
-module.exports = { Chat, ChatHub, chatCompletion };
+export { Chat, ChatHub, chatCompletion };

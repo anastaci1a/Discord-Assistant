@@ -1,4 +1,4 @@
-async function interactions(req, res) {
+export async function interactions(req, res) {
   // Interaction type and data
   const { type, id, data } = req.body;
 
@@ -28,4 +28,4 @@ async function interactions(req, res) {
       });
     }
   }
-});
+};

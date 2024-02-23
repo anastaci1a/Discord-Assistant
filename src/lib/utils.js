@@ -1,9 +1,9 @@
 // dependencies
-const moment = require('moment-timezone');
+import moment from 'moment-timezone';
 
-// export functions
+// exports
 
-async function allAreTrue(functionsArray) {
+export async function allAreTrue(functionsArray) {
   try {
     // Execute all functions and wait for their resolution
     const results = await Promise.all(functionsArray.map(func => func()));
@@ -17,12 +17,7 @@ async function allAreTrue(functionsArray) {
   }
 }
 
-function dateTime(simple, timeZone = "America/New_York") {
+export function dateTime(simple, timeZone = "America/New_York") {
   if (simple) return moment().tz(timeZone).format('MMDDYY');
   else return moment().tz(timeZone).format(`MMMM D, YYYY (h:mm A ([${timeZone}]))`);
 }
-
-
-// exports
-
-module.exports = { allAreTrue, dateTime };

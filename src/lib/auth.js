@@ -1,11 +1,11 @@
 // dependencies
 
-const responder = require('@lib/responder');
+import * as responder from './responder.js';
 
 
-// export functions
+// exports
 
-const verifyKey = (req, res, next) => {
+export const verifyKey = (req, res, next) => {
   const accessKey = req.get('ACCESS_KEY');
   if (accessKey == process.env.ACCESS_KEY) {
     next();
@@ -13,8 +13,3 @@ const verifyKey = (req, res, next) => {
     responder(res, 401, {}, "Invalid access key.");
   }
 };
-
-
-// exports
-
-module.exports = { verifyKey };

@@ -1,16 +1,14 @@
 // dependencies
 
-require('module-alias/register');
-require('dotenv').config();
+import 'dotenv/config';
+
+import setupApp from './server.js';
+import { startLocaltunnel as startTunnel } from './lib/tunnel/localtunnel-manager.js';
+// import { startNgrok as startTunnel } from './lib/tunnel/ngrok-manager.js';
+const port = process.env.PORT || 3000;
+
 
 // server
 
-const app = require('./server');
-const { startNgrok } = require('@lib/ngrok-manager');
-const port = process.env.PORT || 3000;
-
-// ngrok
-startNgrok(port).catch(console.error);
-
-// listen on app
-app.listen(port);
+const app = await setupApp();
+app.listen(port, startTunnel(port));

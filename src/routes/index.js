@@ -1,11 +1,11 @@
 // dependencies
 
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 const endpoint = '/';
 
-const responder = require('@lib/responder');
-const auth = require('@lib/auth');
+import responder from '../lib/responder.js';
+import * as auth from '../lib/auth.js';
 
 
 // router management
@@ -21,4 +21,4 @@ router.get('/api', auth.verifyKey, (req, res) => {
 
 // exports
 
-module.exports = { endpoint, router };
+export { endpoint, router };

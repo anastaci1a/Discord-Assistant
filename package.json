@@ -1,15 +1,8 @@
 {
-  "_moduleAliases": {
-    "@controllers": "./src/controllers",
-    "@data": "./src/data",
-    "@lib": "./src/lib",
-    "@root": ".",
-    "@routes": "./src/routes",
-    "@src": "."
-  },
   "name": "lexi",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "app.js",
   "scripts": {
     "start": "node src/app.js",
@@ -26,7 +19,7 @@
     "dotenv": "^16.4.4",
     "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
-    "module-alias": "^2.2.3",
+    "localtunnel": "^2.0.2",
     "moment-timezone": "^0.5.45",
     "ngrok": "^5.0.0-beta.2",
     "node-fetch": "^3.3.2",
