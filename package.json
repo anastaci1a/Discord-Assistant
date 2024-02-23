@@ -1,15 +1,35 @@
 {
+  "_moduleAliases": {
+    "@controllers": "./src/controllers",
+    "@data": "./src/data",
+    "@lib": "./src/lib",
+    "@root": ".",
+    "@routes": "./src/routes",
+    "@src": "."
+  },
   "name": "lexi",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
   },
   "repository": {
     "type": "git",
     "url": "lexi-assistant"
   },
   "author": "Anastacia Jahnel (anastaci1a)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "discord-interactions": "^3.4.0",
+    "dotenv": "^16.4.4",
+    "express": "^4.18.2",
+    "express-async-errors": "^3.1.1",
+    "module-alias": "^2.2.3",
+    "moment-timezone": "^0.5.45",
+    "ngrok": "^5.0.0-beta.2",
+    "node-fetch": "^3.3.2",
+    "twilio": "^4.22.0"
+  }
 }
