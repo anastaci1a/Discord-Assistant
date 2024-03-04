@@ -16,7 +16,7 @@ chathub.params.savePath = chatdataPath;
 
 // export
 
-let bots = [
+export default const bots = [
   // "Eve" config
   {
     // discord config
@@ -141,6 +141,4 @@ let bots = [
   //     ]
   //   })
   // }
-]
-
-export default bots;
+];
