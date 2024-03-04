@@ -1,8 +1,8 @@
 // dependencies
 
 import axios from 'axios';
-import * as fm from './file-manager.js';
-import { dateTime } from './utils.js';
+import * as fm from './fileManager.js';
+import * as utils from './utils.js';
 
 
 // system
@@ -67,24 +67,6 @@ const chatDefaults = {
   // "user": "123456789"         // [string]                   (a unique identifier representing the end-user)
 };
 
-
-// system functions
-
-async function __chatCompletion(messages, params = {}) {
-  let payload = { ...chatDefaults, ...params, messages: messages };
-  let { full_response, ...rest } = payload;
-  payload = rest;
-  console.log(payload);
-
-  try {
-    const response = await __fetchAPI(Endpoints.CHAT, payload);
-    console.log(response);
-    return full_response ? response.data : response.data.choices[0].message;
-  } catch (error) {
-    throw error;
-  }
-}
-
 async function __fetchAPI(url, payload) {
   const headers = {
     'Content-Type': 'application/json',
@@ -112,43 +94,92 @@ async function __fetchAPI(url, payload) {
   }
 }
 
+async function __chatCompletion(messages, params = {}) {
+  let payload = { ...chatDefaults, ...params, messages: __parseMessages(messages) };
+  let { full_response, ...rest } = payload;
+  payload = rest;
+
+  try {
+    const response = await __fetchAPI(Endpoints.CHAT, payload);
+    return full_response ? response.data : response.data.choices[0].message;
+  } catch (error) {
+    throw error;
+  }
+}
+
+function __parseMessages(messages) {
+  let parsed = [];
+  for (let i = 0; i < messages.length; i++) {
+    let m = messages[i];
+    parsed.push({
+      "content": m.content,
+      "role": m.role,
+      "name": m.name
+    });
+  }
+  return parsed;
+}
+
 
 // exports
 
-class ChatHub {
-  constructor() {
+class Chathub {
+  constructor(params) {
     this.chats = new Map();
 
-    this.archive = true;
-    this.savePath = './data/chat-data.json';
+    this.params = {
+      "archive": true,
+      "savePath": './data/chat-data.json',
+      "autoCreate": true
+    }
+    this.setParams(params);
   }
 
-  create(name, messages = [], params = {}) {
+
+  // chat methods directly translated from `Chat` class
+
+  async ask(chatName, content, role, name, origin, isFromDiscord) {
+    return this.getChat(chatName).ask(content, role, name, origin, isFromDiscord);
+  }
+
+  async prompt(chatName) {
+    return this.getChat(chatName).prompt();
+  }
+
+  async promptNoRecord(chatName) {
+    return this.getChat(chatName).promptNoRecord();
+  }
+
+  addMessage(chatName, content, role, name, origin, isFromDiscord) {
+    this.getChat(chatName).addMessage(content, role, name, origin, isFromDiscord);
+  }
+
+
+  // chat management methods
+
+  getChat(name) {
+    let chat = this.chats.get(name);
+    if (chat === undefined) {
+      if (this.params.autoCreate) {
+        chat = this.createChat(name);
+      } else throw new Error("The requested chat does not exist.");
+    }
+    return chat;
+  }
+
+  createChat(name, messages = [], params = {}) {
     this.chats.set(name, new Chat(messages, params));
     return this.chats.get(name);
   }
 
-  get(name) {
-    try {
-      return this.chats.get(name);
-    } catch (error) {
-      throw new Error("The requested chat does not exist.");
-    }
-  }
-
-  delete(name) {
+  deleteChat(name) {
     return this.chats.delete(name);
   }
 
-  async save() {
-    await this.saveToJsonFile(this.savePath, this.archive);
-  }
 
-  async load() {
-    await this.loadFromJsonFile(this.savePath);
-  }
+  // file management methods
 
-  async loadFromJsonFile(pathToJson) {
+  async loadChats(pathToJson = this.params.savePath) {
     try {
       let chatdata = await fm.loadJsonFromFile(pathToJson);
       this.loadFromJson(chatdata);
@@ -157,11 +188,11 @@ class ChatHub {
     }
   }
 
-  async saveToJsonFile(pathToJson, archive = true) {
+  async saveChats(pathToJson = this.params.savePath, archive = this.params.archive) {
     try {
       let chatdata = this.getJson();
       if (archive) {
-        const simpleTimestamp = dateTime(true);
+        const simpleTimestamp = utils.dateTime(0);
         const archivePath = pathToJson.replace(/(\/)([^\/]+)(\.json)$/, `$1archive/$2_${simpleTimestamp}$3`);
         await fm.saveJsonToFile(archivePath, chatdata);
       }
@@ -174,10 +205,12 @@ class ChatHub {
 
   loadFromJson(chatdata) {
     try {
+      this.setParams(chatdata?.params);
       for (let i = 0; i < chatdata.chats.length; i++) {
-        let chat = chatdata.chats[index];
+        let chat = chatdata.chats[i];
         let name = chat.name;
-        this.create(name, chat.messages, chat.params);
+        this.createChat(name, chat.messages, chat.params);
+        this.getChat(name).setDefaults(chat.defaults);
       }
     } catch (error) {
       throw new Error("Could not load/parse chat data from JSON.");
@@ -188,15 +221,15 @@ class ChatHub {
     try {
       let chatdata = {
         "chats": [],
-        "timestamp": dateTime()
+        "params": this.params,
+        "timestamp": utils.dateTime(1)
       };
       this.chats.forEach((chat, name) => {
-        let messages = chat.messages;
-        let params = chat.params;
         chatdata.chats.push({
-          "name": key,
-          "messages": messages,
-          "params": params
+          "name": name,
+          "messages": chat.messages,
+          "params": chat.params,
+          "defaults": chat.defaults
         });
       });
       return chatdata;
@@ -204,31 +237,50 @@ class ChatHub {
       throw new Error("Could not convert chats to JSON.");
     }
   }
+
+
+  // misc methods
+
+  setParams(params = {}) {
+    this.params =  { ...params, ...this.params };
+  }
 }
 
 class Chat {
-  constructor(messages = [], params = {}, errorRetryCount = 10) {
+  constructor(messages = [], params = {}, defaults = {}) {
     this.messages = messages;
-    this.errorRetryCount = errorRetryCount;
-    this.params = {};
+
+    this.params = params;
+
     this.defaults = {
       "role": "user",
-      "name": "unknown"
+      "name": "unknown",
+      "assistantName": "unknown",
+
+      "timestampStatus": false,
+      "timestampStatusTimeout": 10, // minutes
+
+      "originStatus": false,
+
+      "errorRetryCount": 10
     };
+
+    this.setDefaults(defaults);
   }
 
-  async ask(content, role = this.defaults.role, name = this.defaults.name) {
-    // ask(content: string, [role: string], [name: string])
+  async ask(content, role, name, origin, isFromDiscord) {
+    // ask(content: string, [role: string], [name: string], [origin: string], [isFromDiscord: boolean])
     // ask(message: object)
     if (typeof content === 'string' || (typeof content === 'object' && content !== null && !Array.isArray(content))) {
-      this.addMessage(content, role, name);
+      this.addMessage(content, role, name, origin, isFromDiscord);
       return await this.prompt();
     }
 
     // ask(messages: array<object>)
+    // Note: This recursively calls 'ask' which (in this use-case) only will handle objects.
     else if (Array.isArray(content) && content.every(item => typeof item === 'object' && item !== null)) {
       for (let message of content) {
-        await this.ask(message); // Note: This recursively calls 'ask' which handles objects.
+        await this.ask(message);
       }
     }
 
@@ -239,29 +291,51 @@ class Chat {
   }
 
   async prompt() {
-    const response = await chatCompletion(this.messages, this.params, this.errorRetryCount);
+    const response = await this.promptNoRecord();
     this.addMessage(response);
     return response;
   }
 
   async promptNoRecord() {
-    return await chatCompletion(this.messages, this.params, this.errorRetryCount);
+    const response = await chatCompletion(this.messages, this.params, this.defaults.errorRetryCount);
+    const responseWithName = { name: this.defaults.assistantName, ...response };
+    return responseWithName;
   }
 
-  addMessage(content, role = this.defaults.role, name = this.defaults.name) {
-    // addMessage(content: string, [role: string], [name: string])
+  addMessage(content, role, name, origin, isFromDiscord) {
+    // addMessage(content: string, [role: string], [name: string], [origin: string], [isFromDiscord: boolean])
     if (typeof content === 'string') {
-      name = name.replace(/ /g, "_");
-      this.messages.push({
+      // use previous message's origin and isFromDiscord as defaults
+      const lastMessage = this.lastMessage();
+      const currOrigin = origin || lastMessage?.origin;
+      const currIsFromDiscord = isFromDiscord || lastMessage?.isFromDiscord;
+
+      const originStatus = this.getOriginStatus(currOrigin, currIsFromDiscord);
+      const timestamp = this.getTimestamp();
+
+      // system message
+      const systemMessage = (originStatus || "") + (originStatus && timestamp ? "\n" : "") + (timestamp || "");
+      if (systemMessage !== "") {
+        this.__addMessage({
+          "content": systemMessage,
+          "role": "system",
+          "name": "[NONE]"
+        });
+      }
+
+      // actual message
+      this.__addMessage({
         "content": content,
-        "role": role || this.defaults.role,
-        "name": name || this.defaults.name
+        "role": role,
+        "name": name,
+        "origin": currOrigin,
+        "isFromDiscord": currIsFromDiscord
       });
     }
 
     // addMessage(message: object)
     else if (typeof content === 'object' && content !== null && !Array.isArray(content)) {
-      this.addMessage(content.content, content.role, content.name);
+      this.addMessage(content.content, content.role, content.name, content.origin, content.isFromDiscord);
     }
 
     // error handling
@@ -270,20 +344,88 @@ class Chat {
     }
   }
 
+  __addMessage(message) {
+    // parse name (if given)
+    const name = message.name != "[NONE]" ? (message.name !== undefined ? message.name.replace(/[^a-zA-Z0-9]/g, '_') : this.defaults.name) : undefined;
+
+    // defaults
+    const messageToAdd = {
+      "content": message.content || "",
+      "role": message.role || this.defaults.role,
+      "name": name,
+      "origin": message.origin,
+      "isFromDiscord": message.isFromDiscord,
+      "timestamp": message.timestamp || utils.dateTime(2)
+    }
+
+    // push message to this.messages
+    this.messages.push(messageToAdd);
+  }
+
+  getOriginStatus(origin, isFromDiscord, forceShow = false) {
+    if (this.defaults.originStatus || forceShow) {
+      const lastMessage = this.lastMessage();
+      const lastOrigin = lastMessage?.origin;
+      const lastIsFromDiscord = lastMessage?.isFromDiscord;
+
+      if (origin !== lastOrigin || isFromDiscord !== lastIsFromDiscord) {
+        const announceSwitch = lastOrigin !== undefined || lastIsFromDiscord !== undefined;
+        return this.__getOriginStatus(origin, isFromDiscord, announceSwitch);
+      }
+    }
+  }
+
+  __getOriginStatus(origin, isFromDiscord, announceSwitch = true) {
+    let content = "";
+    if (announceSwitch) {
+      if (isFromDiscord) content += `[The chat has been switched to the channel #${origin}]`;
+      else content += `[The chat has been switched to '${origin}', outside of Discord]`;
+    } else {
+      if (isFromDiscord) content += `[The chat is currently set to the channel #${origin}]`;
+      else content += `[The chat is currently set to '${origin}', outside of Discord]`;
+    }
+
+    return content;
+  }
+
+  getTimestamp(forceShow = false) {
+    if (this.defaults.timestampStatus || forceShow) {
+      const currentTime = utils.dateTime(3);
+      const timestampNow = utils.dateTime(2);
+      const lastTimestamp = this.lastMessage()?.timestamp;
+
+      if (lastTimestamp !== undefined) {
+        const lastTime = utils.parseDateTime(lastTimestamp, 2);
+        const timeDifference = utils.dateTimeDifference(currentTime, lastTime);
+
+        if (timeDifference >= this.defaults.timestampStatusTimeout) {
+          const formattedTimeDifference = utils.formatDateTimeDifference(timeDifference);
+          return this.__getTimestamp(timestampNow, formattedTimeDifference);
+        }
+      } else {
+        return this.__getTimestamp(timestampNow);
+      }
+    }
+  }
+
+  __getTimestamp(timestampNow, timeDifference) {
+    let content = `[It is currently ${timestampNow}`;
+    if (timeDifference !== undefined) content += `; it has been ${timeDifference} since the last message]`;
+    else content += "]";
+
+    return content;
+  }
+
+  lastMessage() {
+    return this.messages[this.messages.length - 1];
+  }
+
   setParams(params) {
     this.params =  { ...params, ...this.params };
   }
 
-  setParam(param, value) {
-    this.params[param] = value;
-  }
-
   setDefaults(defaults) {
-    this.defaults =  { ...defaults, ...this.defaults };
-  }
-
-  setDefault(def, value) {
-    this.defaults[def] = value;
+    this.defaults =  { ...this.defaults, ...defaults };
   }
 }
 
@@ -303,4 +445,4 @@ async function chatCompletion(messages, params = {}, errorRetryCount = 0) {
 
 // exports
 
-export { Chat, ChatHub, chatCompletion };
+export { Chat, Chathub, chatCompletion };

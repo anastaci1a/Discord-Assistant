@@ -1,5 +1,6 @@
 .env
 dev.bat
+Dockerfile
 node_modules/
 src/data/**/*.json
 start.bat

@@ -1,6 +1,6 @@
 // dependencies
 
-import * as responder from './responder.js';
+import responder from './responder.js';
 
 
 // exports

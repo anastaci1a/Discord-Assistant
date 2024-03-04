@@ -6,7 +6,6 @@ import twilio from 'twilio';
 const client = twilio(accountSid, authToken);
 
 
-
 // exports
 
 client.messages

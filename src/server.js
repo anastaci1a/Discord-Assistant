@@ -3,7 +3,7 @@
 import 'express-async-errors';
 import express from 'express';
 
-import { getModulesInDirectory } from './lib/file-manager.js';
+import { getModulesInDirectory } from './lib/fileManager.js';
 import responder from './lib/responder.js';
 
 

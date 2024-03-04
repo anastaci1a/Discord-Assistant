@@ -2,7 +2,7 @@
 
 import express from 'express';
 
-import * as fm from '../lib/file-manager.js';
+import * as fm from '../lib/fileManager.js';
 import * as openai from '../lib/openai.js';
 import responder from '../lib/responder.js';
 import { allAreTrue } from '../lib/utils.js';
