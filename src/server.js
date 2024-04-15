@@ -7,14 +7,14 @@ import { getModulesInDirectory } from './lib/fileManager.js';
 import responder from './lib/responder.js';
 
 
-// export
+// system
 
-export default async function setupApp() {
+async function startServer() {
   const app = express();
   app.use(express.json());
 
   const routers = await getModulesInDirectory('./routes');
-  for (let router of routers) {
+  for (const router of routers) {
     app.use(router.endpoint, router.router);
   }
 
@@ -25,3 +25,8 @@ export default async function setupApp() {
 
   return app;
 }
+
+
+// export
+
+export default setupServer;

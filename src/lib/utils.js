@@ -21,9 +21,9 @@ export function dateTime(mode = 0/*, timeZone = "America/New_York"*/) {
   // simple
   if (mode == 0) return moment().format('MMDDYY');
   // verbose 1
-  else if (mode == 1) return moment().format(`MMMM D, YYYY (h:mm A)`);
+  else if (mode == 1) return moment().format('dddd, MMMM D, YYYY (h:mm A)');
   // verbose 2
-  else if (mode == 2) return moment().format(`h:mma - MMMM D, YYYY`);
+  else if (mode == 2) return moment().format('h:mma - dddd, MMMM D, YYYY');
 
   // moment object
   else if (mode == 3) return moment();
@@ -32,10 +32,10 @@ export function dateTime(mode = 0/*, timeZone = "America/New_York"*/) {
 export function parseDateTime(dateTimeToParse, mode = 0/*, timeZone = "America/New_York"*/) {
   // simple
   if (mode == 0) return moment(dateTimeToParse, 'MMDDYY');
-  // verbose
-  else if (mode == 1) return moment(dateTimeToParse, `MMMM D, YYYY (h:mm A)`);
-  // medium
-  else if (mode == 2) return moment(dateTimeToParse, `h:mma - MMMM D, YYYY`);
+  // verbose 1
+  else if (mode == 1) return moment(dateTimeToParse, 'dddd, MMMM D, YYYY (h:mm A)');
+  // verbose 2
+  else if (mode == 2) return moment(dateTimeToParse, 'h:mma - dddd, MMMM D, YYYY');
 }
 
 export function dateTimeDifference(largerTime, lesserTime) {

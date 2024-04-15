@@ -10,7 +10,7 @@ export async function startNgrok(port) {
     proto: 'http',
     addr: `127.0.0.1:${port}`,
     authtoken: process.env.NGROK_AUTH_TOKEN,
-    hostname: "epic-grand-chimp.ngrok-free.app"
+    hostname: process.env.NGROK_HOSTNAME
   });
   console.log(`localhost:${port} tunneled to ${url}...`);
 };

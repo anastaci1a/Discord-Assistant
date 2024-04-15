@@ -34,20 +34,18 @@ export async function saveJsonToFile(filePath, json = {}) { // relative to direc
   await fsp.writeFile(filePath, data);
 }
 
-export async function getModulesInDirectory(dirPath) {
-  // Assuming getPathFromSRC is another function that computes the path based on the src directory
-  let realDir = getPathFromSRC(dirPath); // Ensure `getPathFromSRC` handles paths correctly in ES Modules context
+export async function getModulesInDirectory(dirPath) { // relative to directory src
+  let realDir = getPathFromSRC(dirPath);
   let packages = [];
 
-  const files = await fsp.readdir(realDir); // Using async fs promises for non-blocking operation
+  const files = await fsp.readdir(realDir);
 
   for (const file of files) {
     if (file.endsWith('.js')) {
-      let filePath = getPathFromSRC(path.join(dirPath, file)); // Ensure path is correctly formatted
-      // Convert file system path to URL path for dynamic import
+      let filePath = getPathFromSRC(path.join(dirPath, file));
       const fileURL = new URL(`file://${filePath}`);
       try {
-        const pkg = await import(fileURL.href); // Dynamic import returns a promise
+        const pkg = await import(fileURL.href);
         packages.push(pkg);
       } catch (error) {
         console.error(`Error importing ${fileURL.href}:`, error);

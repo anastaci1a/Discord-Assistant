@@ -20,7 +20,7 @@ const chatDefaults = {
 
   // REQUIRED fields - by OpenAI
 
-  "messages": [                  // [array]                    (a list comprising the conversation so far)
+  "messages": [                  // [array]                    (a list comprised of the conversation so far)
     {
       "role": "assistant",
       "content": "You are a helpful assistant."
@@ -129,7 +129,7 @@ class Chathub {
 
     this.params = {
       "archive": true,
-      "savePath": './data/chat-data.json',
+      "savePath": './data/chats/chat-data.json',
       "autoCreate": true
     }
     this.setParams(params);
@@ -310,18 +310,8 @@ class Chat {
       const currOrigin = origin || lastMessage?.origin;
       const currIsFromDiscord = isFromDiscord || lastMessage?.isFromDiscord;
 
-      const originStatus = this.getOriginStatus(currOrigin, currIsFromDiscord);
-      const timestamp = this.getTimestamp();
-
       // system message
-      const systemMessage = (originStatus || "") + (originStatus && timestamp ? "\n" : "") + (timestamp || "");
-      if (systemMessage !== "") {
-        this.__addMessage({
-          "content": systemMessage,
-          "role": "system",
-          "name": "[NONE]"
-        });
-      }
+      this.addStatusMessage(currOrigin, currIsFromDiscord);
 
       // actual message
       this.__addMessage({
@@ -362,14 +352,35 @@ class Chat {
     this.messages.push(messageToAdd);
   }
 
+  addStatusMessage(origin, isFromDiscord, forceShow = false) {
+    const lastMessage = this.lastMessage();
+    const currOrigin = origin || lastMessage?.origin;
+    const currIsFromDiscord = isFromDiscord || lastMessage?.isFromDiscord;
+
+    const originStatus = this.getOriginStatus(currOrigin, currIsFromDiscord, forceShow);
+    const timestamp = this.getTimestamp(forceShow);
+
+    const systemMessage = (originStatus || "") + (originStatus && timestamp ? "\n" : "") + (timestamp || "");
+    if (systemMessage !== "") {
+      this.__addMessage({
+        "content": systemMessage,
+        "role": "system",
+        "name": "[NONE]",
+        "origin": currOrigin,
+        "isFromDiscord": currIsFromDiscord
+      });
+    }
+  }
+
   getOriginStatus(origin, isFromDiscord, forceShow = false) {
     if (this.defaults.originStatus || forceShow) {
       const lastMessage = this.lastMessage();
       const lastOrigin = lastMessage?.origin;
       const lastIsFromDiscord = lastMessage?.isFromDiscord;
 
-      if (origin !== lastOrigin || isFromDiscord !== lastIsFromDiscord) {
-        const announceSwitch = lastOrigin !== undefined || lastIsFromDiscord !== undefined;
+      const isDifferent = origin !== lastOrigin || isFromDiscord !== lastIsFromDiscord;
+      if (isDifferent || forceShow) {
+        const announceSwitch = origin === undefined || isFromDiscord === undefined
         return this.__getOriginStatus(origin, isFromDiscord, announceSwitch);
       }
     }
@@ -398,7 +409,7 @@ class Chat {
         const lastTime = utils.parseDateTime(lastTimestamp, 2);
         const timeDifference = utils.dateTimeDifference(currentTime, lastTime);
 
-        if (timeDifference >= this.defaults.timestampStatusTimeout) {
+        if (timeDifference >= this.defaults.timestampStatusTimeout || forceShow) {
           const formattedTimeDifference = utils.formatDateTimeDifference(timeDifference);
           return this.__getTimestamp(timestampNow, formattedTimeDifference);
         }

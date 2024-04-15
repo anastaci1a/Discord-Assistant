@@ -1,47 +1,90 @@
-*I messed up and forgot to commit the first time...*
+___~--***--~___
+
+***TODO (by priority, descending)***
+
+___~--***--~___
+
+- [ ] figure out `node-schedule` function scheduling and `discord.js` embeds in order to make a `chat-data.json` backup system where at 11:59pm every night, the current `chat-data.json` file is embedded in a message and sent to the `#archive` channel
+
+  - [ ] ***[NEW]*** make a `scheduler.js` file for easy scheduling
+
+    - [x] ***[NEW]*** initial functions creation
+
+    - [ ] ***[NEW]*** test basic scheduling functions using the new file
+
+    - [ ] ***[NEW]*** make a class that saves/loads scheduled events (separate from `node-schedule`, or possibly something built-in; if it *is* built in, a class is not necessary)
+
+  - [ ] ***[NEW]*** use this new `scheduler.js` system and integrate it into `botConfig.js`
+
+    - [ ] ***[NEW]*** initial setup/testing of `scheduler.js` in `botConfig.js`
+
+    - [ ] ***[NEW]*** integrate `scheduler.js` into bot-accessible commands (i.e. `/messagelater`) as well as automatic daily `chatlog.json` backups at 11:59pm in the `#archive` channel
+
+      - [ ] ***[NEW]*** set up bot commands (simple)
+
+      - [ ] ***[NEW]*** daily `chatlog.json` backups
+
+        - [ ] ***[NEW]*** figure out embedding with `discord.js`
+
+        - [ ] ***[NEW]*** send embed of archive
+
+- [ ] configure "Scheduling Bot" in `botConfig.js`
+
+  - [ ] integrate with Eve using `promptEndings`
+
+    - [ ] "teach" Eve how to use the scheduling bot
+
+      > Note: outlined in `/schedule` section of `promptEndings` in `botConfig.js`
+
+  - [ ] develop direct support for the Google Calendar API
+
+    - [x] Google auth stuff
+
+      > Note: created `googleAuth.js` file in `lib` folder that contains/exports an `authenticate` function which serves as an all-encompassing system for managing oauth tokens for Google Cloud applications
+
+    - [x] auto sync, and auto schedule export from the server to the calendar
+
+      > Note: this isn't as relevant because of the nature of how this system functions, as soon as a set of events are approved to be uploaded to Google Calendar they simply *are uploaded*, and every time the AI needs to access the calendar, it views the most recent calendar events loaded straight from the API
+
+    - [ ] ***[NEW]*** add all necessary functions pertaining to calendar access/modification
+
+      - [ ] ***[NEW]*** overview function returning recent/upcoming events as well as [farther away] significant events (marked as such)
+
+        > Note: IDs should be present on every returned event for selection (if needed)
+
+      - [ ] ***[NEW]*** function to access of events within a range of dates (IDs)
+
+      - [ ] ***[NEW]*** function to add events with full payload customization (basic event info as well as `all day` flag, color, etc.), etc.)
+
+      - [ ] ***[NEW]*** function to modify existing events (selected by the ID returned by "access functions")
+
+- [ ] ***[NEW]*** make askNoRecord  in `openai.js` (may not be needed but would be nice to have)
+
+- [ ] ***[NEW]*** rename `Scheduling Bot` into something more broad (`Utility Bot`, `Multipurpose Bot`, `Management Bot`, etc.)
+
+- [x] ***[NEW]*** create `addStatusMessage` in `openai.js`, all encompassing method for time keeping and message origin changes
+
+- [x] ***[NEW]*** add `nodemon.json` to ignore changes in `src/data/*` folder
+
+___~--***--~___
+
+***LOW PRIORITY TODO***
+
+___~--***--~___
+
+- [ ] ***[NEW]*** rename `Scheduling Bot` to something more broad (i.e. `Utility Bot`)
+
+  > Note: not as relevant yet because calendar access is currently the only functionality, though scheduled AI prompting *is* being worked on
+
+  - [ ] (change Eve's initial system text to make her...um...less incredibly worried about me...)
+
+    > Note: in `chat-data.json` (not git tracked), created `Eve [AI]` (AI "personality" with access to slash (`/`) commands), renamed original Eve to `Eve [Original]`, and merged the two (as a new "chat", `Eve`) into a more capable, personable, assistant (though...she is still decently worried so that needs to be fixed)
+
+- [ ] (develop some consistency in terms of when to use double quotes (") vs single quotes (') vs none (none: json object declaration))
+
+
 
 ***
 
-**WHAT I JUST DID THIS COMMIT (what I was going to commit originally)**
-- scrapped discord-interactions package and tunnels
-  - (scrapped tunnels for the most part - may still use ngrok for general api use)
-- set up discord.js with "Eve" discord bot
-  - COULDN'T GET INTERACTIONS WORKING :(
 
-**WHAT TO DO NEXT (what I had planned on doing next)**
-- figure out interactions
-- set up ChatHub objects with discord
-- everything else
-
-***
-
-**WHAT I JUST DID THIS COMMIT (the rest)**
-- Lexi became Simone, and Simone became **Eve**
-- initially set up discord.js events in a very hardcoded way in `chatService.js` (no longer exists)
-- refactored all of `chatService.js` in its entirety into a more modular design (`botConfig.js`), which allows for relatively simple event handling with multiple bots (with multiple discord bot tokens and different permissions)
-  - (`botConfig.js` essentially contains an array of "bots" that contain their respective discord client objects (/discord configs), code to handle events, a pointer to a chat within `chat-data.json`, and really any logic necessary for the bot)
-    - (something to note, any given index in the `bots` array (defined/exported in `botConfig.js`) doesn't necessarily need to have an associated `discord` parameter containing the discord bot config, it's possible for it to be a standalone unit without a dedicated discord bot associated with it)
-  - (also *massively* simplified `discordService.js` to work with the newly refactored system)
-- new `discordUtils.js` file (just a start) for, well, utility functions related to discord (as of now it's just for parsing messages sent from discord to be more readable)
-- fleshed out the `Chathub` class (no longer `ChatHub`) in `openai.js`
-  - added functionality for optional timestamp (shown after timeout) and origin (where the input message comes from, be it a discord channel or elsewhere (`origin`, `isFromDiscord`)) status messages (can be specified to be shown/excluded in instances of the `Chat` object's `defaults` parameter (`timestampStatus`, `timestampStatusTimeout`, `originStatus`))
-  - translated basic `Chat` class methods into `Chathub` for easy access of `Chat` instances
-- temporarily disabled localhost tunneling (ngrok/localtunnel), as `discord.js` has no need for a publicly hosted server
-  - (eventually the goal, however, is to set up the server such that it can be accessed through discord *as well as* its own api (this used to be managed by `routes/chat.js` and `controllers/chatController.js` before `discord.js` was adopted, they now have the file extension `.jsNONFUNCTIONAL` as a temporary measure))
-- and like last time a **BUNCH** of stuff I'm forgetting
-
-**WHAT TO DO NEXT**
-- configure "Scheduling Bot" in `botConfig.js`
-  - integrate with Eve using `promptEndings`
-    - "teach" Eve how to use the scheduling bot
-      - (outlined lines 117-125 of `botConfig.js`)
-  - develop direct support for the Google Calendar API
-    - Google auth stuff
-    - auto sync, and auto schedule export from the server to the calendar
-- (less impactful and more annoying, but rewarding)
-  - (change Eve's initial system text to make her...um...less incredibly worried about me...)
-  - (develop some consistency in terms of when to use double quotes (") vs single quotes (') vs none (none: json object declaration))
-
-***
-
-*wow that was a lot...I gotta get this up and running so I can get my life back in order lmaoo*
+> Note: checked boxes signify completion during *this commit* (after committing they must be deleted)

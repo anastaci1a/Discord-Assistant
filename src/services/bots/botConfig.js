@@ -2,23 +2,26 @@
 
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 
-import { Chathub } from '../lib/openai.js';
-import * as du from '../lib/discordUtils.js';
+import { Chathub } from '../../lib/openai.js';
+import * as du from '../../lib/discordUtils.js';
 
 
 // init
 
 const chathub = new Chathub();
-const chatdataPath = './data/chat-data.json';
+const chatdataPath = './data/chats/chat-data.json';
 chathub.loadChats(chatdataPath);
 chathub.params.savePath = chatdataPath;
 
 
-// export
+// system
 
-export default const bots = [
+const bots = [
   // "Eve" config
   {
+    // general access bot uid
+    uid: "Eve",
+
     // discord config
     discord: {
       token: process.env.DISCORD_BOT_EVE_TOKEN,
@@ -35,9 +38,16 @@ export default const bots = [
           on: Events.MessageCreate,
           execute: async (thisBot, message) => {
             const parsed = await du.parseMessage(message, thisBot.discord);
-            if (parsed.authorUsername != thisBot.discord.username) {
+            if (parsed.username != thisBot.discord.username) {
               try {
-                const response = await thisBot.utils.processMessage(thisBot, parsed.content, parsed.username, parsed.channel.name, true);
+                const inputMessage = {
+                  content: parsed.content,
+                  role: "user",
+                  name: parsed.username,
+                  origin: parsed.channel.name,
+                  isFromDiscord: true
+                };
+                const response = await thisBot.utils.processMessage(thisBot, inputMessage);
                 if (response.happened) {
                   await parsed.channel.send(response.message);
                 }
@@ -55,18 +65,10 @@ export default const bots = [
     },
 
     // chat config
-    chatName: "Eve", // name of chat in 'src/data/chat-data.json'.chats[*].name
+    chatName: "Eve", // name of chat in 'src/data/chats/chat-data.json'.chats[*].name
     autosave: true,
     utils: {
-      processMessage: async (thisBot, message, username, origin, isFromDiscord) => {
-        const inputMessage = {
-          content: message,
-          role: "user",
-          name: username,
-          origin: origin,
-          isFromDiscord: isFromDiscord
-        };
-
+      processMessage: async (thisBot, inputMessage) => {
         const response = {
           happened: false,
           message: ""
@@ -76,14 +78,16 @@ export default const bots = [
         let cont = true;
         for (const promptEnding of thisBot.promptEndings) {
           if (inputMessage.content.endsWith(promptEnding.str)) {
-            inputMessage.content = inputMessage.content.slice(0, inputMessage.content.length - promptEnding.str.length);
-            inputMessage.content += promptEnding.strReplace || "";
+            if (promptEnding.strReplace) {
+              inputMessage.content = inputMessage.content.slice(0, inputMessage.content.length - promptEnding.str.length);
+              inputMessage.content += promptEnding.strReplace || "";
+            }
 
-            const execution = promptEnding.execute(thisBot, inputMessage, origin, isFromDiscord);
+            const execution = promptEnding.execute(thisBot, inputMessage);
 
-            cont = execution?.cont || true;
-            response.happened = execution?.responseHappened || false;
-            response.message = execution?.responseMessage || "";
+            cont = execution?.cont ?? true;
+            response.happened = execution?.responseHappened ?? false;
+            response.message = execution?.responseMessage ?? "";
             break;
           }
         }
@@ -93,9 +97,10 @@ export default const bots = [
           const chatResponse = await chathub.ask(thisBot.chatName, inputMessage);
           response.happened = true;
           response.message = chatResponse.content;
-
-          if (thisBot.autosave) chathub.saveChats();
         }
+
+        // autosave regardless of cont
+        if (thisBot.autosave) chathub.saveChats();
 
         // return
         return response;
@@ -105,15 +110,16 @@ export default const bots = [
       // add message without prompting
       {
         "str": " ,",
+        "strReplace": "",
         "execute": (thisBot, inputMessage) => {
           chathub.addMessage(thisBot.chatName, inputMessage);
-          return { cont: true };
+
+          return { cont: false };
         }
       },
       {
-        "str": " ?",
-        "strReplace": "?",
-        "execute": (thisBot, inputMessage, origin, isFromDiscord) => {
+        "str": "/schedule",
+        "execute": (thisBot, inputMessage) => {
           // add system message after user message stating that the chat has been switched to the 'Scheduling Bot' chat
           // add Scheduling Bot message with the upcoming real calendar data (2 weeks or so)
           // add Scheduling Bot message with the current goals of the user
@@ -124,21 +130,59 @@ export default const bots = [
           // parse response into readable json
           // add schedule blocks to google calendar (api)
         }
+      },
+      {
+        "str": "/goals",
+        "execute": (thisBot, inputMessage, origin, isFromDiscord) => {
+          // pull up goals file
+        }
       }
     ]
-  } // ,
+  },
 
   // "Scheduling Bot" config
-  // {
-  //   token: process.env.DISCORD_BOT_SCHEDULING_TOKEN,
-  //   chatName: "Scheduling Bot",
-  //   username: "",
-  //   client: new Client({
-  //     intents: [
-  //       GatewayIntentBits.Guilds,
-  //       GatewayIntentBits.GuildMessages,
-  //       GatewayIntentBits.MessageContent
-  //     ]
-  //   })
-  // }
+  {
+    // general access bot uid
+    uid: "Scheduling Bot",
+
+    // discord config
+    discord: {
+      token: process.env.DISCORD_BOT_SCHEDULING_TOKEN,
+      username: "",
+      client: new Client({
+        intents: [
+          GatewayIntentBits.Guilds,
+          GatewayIntentBits.GuildMessages,
+          GatewayIntentBits.MessageContent
+        ]
+      }),
+      events: [
+        // ...
+      ]
+    },
+
+    // chat config
+    chatName: "Scheduling Bot",
+    autosave: true,
+    utils: {
+      // processMessage: async (thisBot, inputMessage) => {
+      //   // ...
+      // }
+    },
+    promptEndings: {
+      // ...
+    }
+  }
 ];
+
+function getBot(uid) {
+  for (const bot of bots) {
+    if (bot.uid == uid) return bot;
+  }
+  console.error(`bot uid not found ('${uid}')`);
+}
+
+
+// exports
+
+export default bots;
