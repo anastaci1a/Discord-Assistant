@@ -6,6 +6,9 @@ import express from 'express';
 import { getModulesInDirectory } from './lib/fileManager.js';
 import responder from './lib/responder.js';
 
+import { StatusConsole } from './lib/logging.js';
+const console = new StatusConsole('server.js');
+
 
 // system
 

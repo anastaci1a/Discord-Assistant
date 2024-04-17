@@ -7,6 +7,9 @@ import startServices from './services.js';
 // import startServer from './server.js';
 // import { startNgrok } from './lib/ngrokManager.js';
 
+import { StatusConsole } from './lib/logging.js';
+const console = new StatusConsole('app.js');
+
 
 // services
 

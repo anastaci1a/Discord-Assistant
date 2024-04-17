@@ -2,6 +2,9 @@
 
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 
+import { StatusConsole } from './logging.js';
+const console = new StatusConsole('discordUtils.js');
+
 
 // exports
 

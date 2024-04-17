@@ -10,6 +10,10 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+import { StatusConsole } from './logging.js';
+const console = new StatusConsole('fileManager.js');
+
+
 // exports
 
 export function getPathFromSRC(filePath) {

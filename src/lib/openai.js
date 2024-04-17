@@ -4,6 +4,9 @@ import axios from 'axios';
 import * as fm from './fileManager.js';
 import * as utils from './utils.js';
 
+import { StatusConsole } from './logging.js';
+const console = new StatusConsole('openai.js');
+
 
 // system
 
@@ -20,29 +23,29 @@ const chatDefaults = {
 
   // REQUIRED fields - by OpenAI
 
-  "messages": [                  // [array]                    (a list comprised of the conversation so far)
+  "messages": [                      // [array]                    (a list comprised of the conversation so far)
     {
       "role": "assistant",
       "content": "You are a helpful assistant."
     }
   ],
-  "model": "gpt-4-0125-preview", // [string]                   (id of the model to use)
+  "model": "gpt-4-turbo-2024-04-09", // [string]                   (id of the model to use)
 
   // OPTIONAL fields - by OpenAI
 
-  // "frequency_penalty": 0,     // [number -2 to 2 or null]   (positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim)
-  // "logit_bias": null,         // [map]                      (modify the likelihood of specified tokens appearing in the completion)
-  // "logprobs": false,          // [boolean or null]          (whether to return log probabilities of the output tokens or not)
-  // "top_logprobs": 0,          // [number 0 to 5 or null]    (specifies the number of most likely tokens to return at each token position, each with an associated log probability.)
-  "max_tokens": 4096,            // [integer or null]          (the maximum number of tokens that can be generated in the chat completion)
-  // "n": 1,                     // [integer or null]          (number of chat completion choices)
-  // "presence_penalty": 0,      // [number or null]           (positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics)
-  // "response_format": "text",  // [string]                   (the format that the model must output, "text" or "json_object")
-  // "seed": null,               // [integer or null]          (requests with the same seed and parameters attempt return the same result)
-  // "stop": null,               // [array of strings or null] (stop sequences)
-  // "temperature": 1,           // [number 0 to 2 or null]    (what sampling temperature to use; higher = more random, lower = more focused/deterministic)
-  // "top_p": 1,                 // [number or null]           (an alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass)
-  // "tools":                    // [array]                    (a list of tools the model may call)
+  // "frequency_penalty": 0,         // [number -2 to 2 or null]   (positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim)
+  // "logit_bias": null,             // [map]                      (modify the likelihood of specified tokens appearing in the completion)
+  // "logprobs": false,              // [boolean or null]          (whether to return log probabilities of the output tokens or not)
+  // "top_logprobs": 0,              // [number 0 to 5 or null]    (specifies the number of most likely tokens to return at each token position, each with an associated log probability.)
+  "max_tokens": 4096,                // [integer or null]          (the maximum number of tokens that can be generated in the chat completion)
+  // "n": 1,                         // [integer or null]          (number of chat completion choices)
+  // "presence_penalty": 0,          // [number or null]           (positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics)
+  // "response_format": "text",      // [string]                   (the format that the model must output, "text" or "json_object")
+  // "seed": null,                   // [integer or null]          (requests with the same seed and parameters attempt return the same result)
+  // "stop": null,                   // [array of strings or null] (stop sequences)
+  // "temperature": 1,               // [number 0 to 2 or null]    (what sampling temperature to use; higher = more random, lower = more focused/deterministic)
+  // "top_p": 1,                     // [number or null]           (an alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass)
+  // "tools":                        // [array]                    (a list of tools the model may call)
   // [
   //   {
   //     "type": "function",
@@ -63,8 +66,8 @@ const chatDefaults = {
   //     }
   //   }
   // ],
-  // "tool_choice": "auto",      // [string or object]         (controls which (if any) function is called by the model)
-  // "user": "123456789"         // [string]                   (a unique identifier representing the end-user)
+  // "tool_choice": "auto",          // [string or object]         (controls which (if any) function is called by the model)
+  // "user": "123456789"             // [string]                   (a unique identifier representing the end-user)
 };
 
 async function __fetchAPI(url, payload) {

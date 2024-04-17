@@ -5,13 +5,16 @@ import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { Chathub } from '../../lib/openai.js';
 import * as du from '../../lib/discordUtils.js';
 
+import { StatusConsole } from '../../lib/logging.js';
+const console = new StatusConsole('botConfig.js');
+
 
 // init
 
 const chathub = new Chathub();
 const chatdataPath = './data/chats/chat-data.json';
-chathub.loadChats(chatdataPath);
 chathub.params.savePath = chatdataPath;
+chathub.loadChats();
 
 
 // system
@@ -179,7 +182,7 @@ function getBot(uid) {
   for (const bot of bots) {
     if (bot.uid == uid) return bot;
   }
-  console.error(`bot uid not found ('${uid}')`);
+  console.error(`Bot uid not found ('${uid}')`);
 }
 
 

@@ -5,6 +5,9 @@ import http from 'http';
 import url from 'url';
 import { google } from 'googleapis';
 
+import { StatusConsole } from './logging.js';
+const console = new StatusConsole('googleManager.js');
+
 
 // system
 

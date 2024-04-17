@@ -2,6 +2,9 @@
 
 import responder from './responder.js';
 
+import { StatusConsole } from './logging.js';
+const console = new StatusConsole('auth.js');
+
 
 // exports
 

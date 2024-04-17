@@ -3,13 +3,13 @@
 import { getModulesInDirectory } from '../lib/fileManager.js';
 
 import { StatusConsole } from '../lib/logging.js';
-const console = new StatusConsole('googleService.js');
+const console = new StatusConsole('utilServices.js');
 
 
 // system
 
 async function initialize() {
-  const services = await getModulesInDirectory('./services/google');
+  const services = await getModulesInDirectory('./services/util');
 
   let successes = 0;
   for (const service of services) {
@@ -17,15 +17,15 @@ async function initialize() {
       const initialized = await service.initialize();
       if (initialized) successes++;
     } catch (error) {
-      console.log("Error during google services authentication.\n", error);
+      console.log("Error during util services startup.\n", error);
       break;
     }
   }
 
   if (services.length == successes) {
-    console.log("Authenticated...");
+    console.log("Running...");
   } else {
-    console.log("Authentication could not be completed.");
+    console.log("Startup could not be completed.");
   }
 }
 

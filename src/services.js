@@ -2,6 +2,9 @@
 
 import { getModulesInDirectory } from './lib/fileManager.js';
 
+import { StatusConsole } from './lib/logging.js';
+const console = new StatusConsole('services.js');
+
 
 // system
 

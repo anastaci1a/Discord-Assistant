@@ -1,3 +1,9 @@
+// dependencies
+
+import { StatusConsole } from './logging.js';
+const console = new StatusConsole('responder.js');
+
+
 // system
 
 const responseCases = [

@@ -3,6 +3,9 @@
 import { getOAuthClient } from '../../lib/googleManager.js';
 import { google } from 'googleapis';
 
+import { StatusConsole } from '../../lib/logging.js';
+const console = new StatusConsole('calendarService.js');
+
 
 // system
 

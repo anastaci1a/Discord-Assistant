@@ -7,6 +7,9 @@ const endpoint = '/';
 import responder from '../lib/responder.js';
 import * as auth from '../lib/auth.js';
 
+import { StatusConsole } from '../lib/logging.js';
+const console = new StatusConsole('index.js');
+
 
 // router management
 

@@ -2,6 +2,9 @@
 
 import ngrok from 'ngrok';
 
+import { StatusConsole } from './logging.js';
+const console = new StatusConsole('ngrokManager.js');
+
 
 // exports
 
