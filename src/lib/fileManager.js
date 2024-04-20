@@ -27,8 +27,8 @@ export async function loadJsonFromFile(filePath) { // relative to directory src
   try {
     const data = await fsp.readFile(filePath, 'utf8');
     return JSON.parse(data);
-  } catch (err) {
-    return undefined;
+  } catch (error) {
+    console.errorThrow("getPathFromSRC", error);
   }
 }
 
@@ -52,7 +52,7 @@ export async function getModulesInDirectory(dirPath) { // relative to directory 
         const pkg = await import(fileURL.href);
         packages.push(pkg);
       } catch (error) {
-        console.error(`Error importing ${fileURL.href}:`, error);
+        console.errorThrow(getModulesInDirectory, `Error importing ${fileURL.href}:`, error);
       }
     }
   }

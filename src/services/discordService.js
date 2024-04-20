@@ -26,7 +26,8 @@ async function initialize() {
         }
       });
 
-      client.login(discordData.token).catch(error => console.error(`Login failed for ${bot.chatName}:`, error));
+      client.login(discordData.token)
+            .catch(error => console.error(`Login failed for ${bot.chatName}.`, error));
     }
   }
 }

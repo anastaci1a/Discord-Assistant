@@ -5,19 +5,25 @@
 
 - [ ] figure out `node-schedule` function scheduling and `discord.js` embeds in order to make a `chat-data.json` backup system where at 11:59pm every night, the current `chat-data.json` file is embedded in a message and sent to the `#archive` channel (also integrate new system into bot-accessible commands)
 
-  - [ ] make/complete a `scheduler.js` file for easy scheduling
+  - [x] make/complete a `scheduler.js` file for easy scheduling
 
-    - [x] test basic scheduling functions using the new file
+    - [x] ***[MODIFIED]*** (maybe/maybe not) import singleton instance of `Scheduler` into the original `scheduler.js` for easier imports (ideally no need to reference `schedulerService.js` in general usage of singleton instance)
 
-    - [x] make a class that saves/loads scheduled events (separate from `node-schedule`, or possibly something built-in; if it *is* built-in, a class is not necessary)
+      > Note: read below for more details on how this was achieved (differently than originally planned)
 
-      > Note: was not built-in, a class was made (`Scheduler`)
+      - [x] ***[NEW]*** create an **async** `getScheduler` function which returns the `scheduler` object once `initialize` is true (no timeout)
 
-    - [x] ***[NEW]*** create `calendarService.js` initiated by `utilServices.js` which creates a singleton instance of the `Scheduler` class
+        - [x] ***[NEW]*** create workaround for circular dependencies regarding `schedulerService.js` and `scheduler.js`
 
-      > Note: the purpose of this is so that there's only one instance of `Scheduler` (`scheduler`) which manages all premeditated function executions
+          > Note: Used `await import` in order to avoid direct circular dependencies
 
-    - [ ] ***[NEW]*** (maybe/maybe not) import singleton instance of `Scheduler` into the original `scheduler.js` for easier imports (ideally no need to reference `schedulerService.js`)
+    - [x] ***[NEW]*** create system that removes old `oneTime` events that haven't been deleted (happens in `saveEvents`)
+
+    - [x] ***[NEW]*** move `functionsToSchedule` array into a new file `schedulerFunctions.js` for ease/clarity
+
+    - [x] ***[NEW]*** general bug fixes
+
+      > Note: `loadEvents` now functions correctly with rescheduling events on load
 
   - [ ] use this new `scheduler.js` system and integrate it into `botConfig.js`
 
@@ -63,9 +69,31 @@
       - [ ] function to modify existing events (selected by the ID returned by "access functions")
 
 
-#### Low Priority / Miscellaneous
+#### Miscellaneous
 
-- [x] ***[NEW]*** create/implement `logging.js`, a replacement for `console.log` with more debugging details
+- [x] create `startup.js` which initiates all necessary functions for the project work (also consolidate error management)
+
+  - [x] add all necessary functions for startup
+
+  - [x] ascii splash and "Starting..." text
+
+- [x] update `logging.js` with better functionality
+
+  - [x] add colored console logging in `logging.js`
+
+    > Note: added new "simple 2" mode of `dateTime` and `parseDateTime` specifically for logging purposes (simple time/date only)
+
+    > Note: also excerpted documentation of string formatting with `moment.js` (useful for "simple 2" mode formatting)
+
+  - [x] add better thrown error nesting
+
+  - [x] refactor all error throws and warnings in **entire project** to use new error system
+
+- [x] better error checking in `fileManager.js`'s `loadJsonFromFile`
+
+- [x] create async `awaitValueChange` function in `utils.js`
+
+  > Note: this is particularly useful for ensuring variables like `initialized` are true before continuing execution (i.e. `getScheduler` in `schedulerService.js`)
 
 - [ ] make askNoRecord  in `openai.js` (may not be needed but would be nice to have)
 

@@ -2,17 +2,13 @@
 
 import * as fm from './fileManager.js';
 import schedule from 'node-schedule';
+import functionsToSchedule from './schedulerFunctions.js';
 
 import { StatusConsole } from './logging.js';
 const console = new StatusConsole('scheduler.js');
 
 
 // system
-
-const functionsToSchedule = Object.freeze({
-  sampleFunction: async () => { console.log("Scheduled function executed successfully..."); }
-  // ...
-});
 
 const ScheduleMode = Object.freeze({
   DAILY: 'daily',
@@ -36,42 +32,70 @@ class Scheduler {
     if (savePath) {
       try {
         const file = await fm.loadJsonFromFile(savePath);
-        // Reschedule tasks on load
-        this.events.oneTime.forEach(event => {
+
+        // Reschedule events on load
+        file.oneTime.forEach(event => {
           const { id, functionName, dateStr, timeStr } = event;
           this.scheduleOnce(functionName, dateStr, timeStr, id);
         });
-        this.events.reoccurring.forEach(event => {
+        file.reoccurring.forEach(event => {
           const { id, functionName, mode, timeStr } = event;
           this.scheduleReoccurring(functionName, mode, timeStr, id);
         });
         this.events = file;
-
-
       } catch (error) {
-        if (autosave) {
-          console.log('Failed to load scheduled events. Attempting to save...');
+        if (this.events.params.autosave) {
+          console.warn("Scheduler.loadEvents", "Failed to load events file. Attempting to save...");
           try {
             await this.saveEvents();
-            console.log('Saved new events file...');
+            console.resolve("Saved new events file...");
           } catch (error) {
-            console.log('Failed to save new events file.'); //\n', err);
+            console.errorThrow("Scheduler.loadEvents", "Failed to save new events file.", error);
           }
         } else {
-          console.error("Failed to load scheduled events.");
+          console.errorThrow("Scheduler.loadEvents", "Failed to load events file.", error);
         }
       }
     } else {
-      console.error("Failed to load scheduled events (no `savePath` provided).")
+      console.errorThrow("Scheduler.loadEvents", "Failed to load events file (no `savePath` provided).")
+    }
+
+    if (this.#removeOldEvents() && this.events.params.autosave) {
+      try {
+        this.saveEvents();
+      } catch (error) {
+        console.errorThrow("Scheduler.loadEvents", "Attempted and failed to save updated events file (removed old events).", error);
+      }
     }
   }
 
   async saveEvents(savePath = this.events.params.savePath) {
-    try {
-      await fm.saveJsonToFile(savePath, this.events);
-    } catch (error) {
-      throw error;
+    if (savePath) {
+      try {
+        this.#removeOldEvents();
+        await fm.saveJsonToFile(savePath, this.events);
+      } catch (error) {
+        console.errorThrow("Scheduler.saveEvents", error);
+      }
+    } else {
+      console.errorThrow("Scheduler.saveEvents", "Failed to save events file (no `savePath` provided).")
     }
+  }
+
+  #removeOldEvents() {
+    const indicesToRemove = [];
+    this.events.oneTime.forEach((event, i) => {
+      const { id, functionName, dateStr, timeStr } = event;
+      const scheduledDate = this.#parseDateTime(dateStr, timeStr);
+      if (scheduledDate < new Date()) indicesToRemove.push(i);
+    });
+
+    indicesToRemove.reverse();
+    for (const i of indicesToRemove) {
+      this.events.oneTime.splice(i, 1);
+    }
+
+    return indicesToRemove.length > 0;
   }
 
   #getId() {
@@ -97,6 +121,11 @@ class Scheduler {
     return { hours, minutes };
   }
 
+  #parseDateTime(dateStr, timeStr) {
+    const { hours, minutes } = this.#normalizeTime(timeStr);
+    return new Date(`${dateStr} ${hours}:${minutes}:00`);
+  }
+
   async scheduleOnce(functionName, dateStr, timeStr = '12:00 PM', providedId = "") {
     const id = providedId || this.#getId();
 
@@ -118,8 +147,7 @@ class Scheduler {
       }
     };
 
-    const { hours, minutes } = this.#normalizeTime(timeStr);
-    const scheduledDate = new Date(`${dateStr} ${hours}:${minutes}:00`);
+    const scheduledDate = this.#parseDateTime(dateStr, timeStr);
     schedule.scheduleJob(scheduledDate, scheduledExecution.bind(this));
   }
 
@@ -128,6 +156,13 @@ class Scheduler {
 
     if (!providedId) {
       const event = { id, functionName, mode, timeStr, type: 'reoccurring' };
+
+      // check if event already exists (do I actually need this? redundant?)
+      // events.oneTime.forEach(_event => {
+      //   const { id as _id, functionName as _functionName, mode as _mode, dateStr as _dateStr, timeStr as _timeStr } = eventToCheck;
+      //   // ...
+      // })
+
       this.events.reoccurring.push(event);
 
       if (this.events.params.autosave) {
@@ -159,7 +194,7 @@ class Scheduler {
         rule.date = 1;
         break;
       default:
-        console.error('Invalid reoccurring mode provided.');
+        console.errorThrow("Scheduler.scheduleReoccurring", "Invalid reoccurring mode provided.");
         return;
     }
 
@@ -167,7 +202,12 @@ class Scheduler {
   }
 }
 
+async function getScheduler() {
+  const schedulerService = await import('../services/utils/schedulerService.js');
+  return schedulerService.getScheduler();
+}
+
 
 // export
 
-export default Scheduler;
+export { Scheduler, ScheduleMode, getScheduler };

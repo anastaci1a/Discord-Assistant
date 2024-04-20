@@ -46,9 +46,8 @@ async function getNextEvents(eventCount) {
       // console.log('No upcoming events found.');
       return []; // Return an empty array if no events found
     }
-  } catch (err) {
-    console.error('Google API error:', err);
-    throw err; // Rethrow or handle error as needed
+  } catch (error) {
+    console.errorThrow("getNextEvents", 'Google API error:', error);
   }
 }
 

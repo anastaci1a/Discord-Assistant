@@ -182,7 +182,7 @@ function getBot(uid) {
   for (const bot of bots) {
     if (bot.uid == uid) return bot;
   }
-  console.error(`Bot uid not found ('${uid}')`);
+  console.errorThrow("getBot", `Bot uid not found ('${uid}')`);
 }
 
 

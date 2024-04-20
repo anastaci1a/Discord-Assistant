@@ -9,7 +9,7 @@ const console = new StatusConsole('utilServices.js');
 // system
 
 async function initialize() {
-  const services = await getModulesInDirectory('./services/util');
+  const services = await getModulesInDirectory('./services/utils');
 
   let successes = 0;
   for (const service of services) {
@@ -17,15 +17,15 @@ async function initialize() {
       const initialized = await service.initialize();
       if (initialized) successes++;
     } catch (error) {
-      console.log("Error during util services startup.\n", error);
+      console.errorThrow("initialize", "Error during util services initialization.", error);
       break;
     }
   }
 
   if (services.length == successes) {
-    console.log("Running...");
+    console.log("Initialized...");
   } else {
-    console.log("Startup could not be completed.");
+    console.errorThrow("initialize", "Initialization could not be completed.");
   }
 }
 

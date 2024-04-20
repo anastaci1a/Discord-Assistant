@@ -5,12 +5,15 @@ import express from 'express';
 
 import { getModulesInDirectory } from './lib/fileManager.js';
 import responder from './lib/responder.js';
+import { startNgrok } from './lib/ngrokManager.js';
 
 import { StatusConsole } from './lib/logging.js';
 const console = new StatusConsole('server.js');
 
 
 // system
+
+const port = process.env.PORT || 3000;
 
 async function startServer() {
   const app = express();
@@ -22,14 +25,17 @@ async function startServer() {
   }
 
   app.use((error, req, res, next) => {
-    console.error(error.stack);
+    console.errorThrow("startServer", error.stack);
     responder(res, 500, { "stack": error.stack });
   });
 
-  return app;
+  app.listen(port, () => {
+    console.log(`Listening on port ${port}...`);
+    startNgrok(port);
+  });
 }
 
 
 // export
 
-export default setupServer;
+export default startServer;

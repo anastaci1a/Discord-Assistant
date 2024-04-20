@@ -93,7 +93,7 @@ async function __fetchAPI(url, payload) {
     //   console.error("Error:", error.message);
     // }
     // console.error("Config:", error.config);
-    throw error;
+    console.errorThrow("__fetchAPI", error);
   }
 }
 
@@ -106,7 +106,7 @@ async function __chatCompletion(messages, params = {}) {
     const response = await __fetchAPI(Endpoints.CHAT, payload);
     return full_response ? response.data : response.data.choices[0].message;
   } catch (error) {
-    throw error;
+    console.errorThrow("__chatCompletion", error);
   }
 }
 
@@ -165,7 +165,7 @@ class Chathub {
     if (chat === undefined) {
       if (this.params.autoCreate) {
         chat = this.createChat(name);
-      } else throw new Error("The requested chat does not exist.");
+      } else console.errorThrow("ChatHub.getChat", "Attempted to access non-existent chat.");
     }
     return chat;
   }
@@ -187,7 +187,7 @@ class Chathub {
       let chatdata = await fm.loadJsonFromFile(pathToJson);
       this.loadFromJson(chatdata);
     } catch (error) {
-      throw new Error("Could not load/parse chat data from JSON file.")
+      console.errorThrow("ChatHub.loadChats", "Could not load/parse chat data from JSON file.");
     }
   }
 
@@ -202,7 +202,7 @@ class Chathub {
       await fm.saveJsonToFile(pathToJson, chatdata);
     } catch (error) {
       console.log(error);
-      throw new Error("Could not save chats to JSON file.")
+      console.errorThrow("ChatHub.saveChats", "Could not save chats to JSON file.")
     }
   }
 
@@ -216,7 +216,7 @@ class Chathub {
         this.getChat(name).setDefaults(chat.defaults);
       }
     } catch (error) {
-      throw new Error("Could not load/parse chat data from JSON.");
+      console.errorThrow("ChatHub.loadFromJson", "Could not load/parse chat data from JSON.");
     }
   }
 
@@ -237,7 +237,7 @@ class Chathub {
       });
       return chatdata;
     } catch (error) {
-      throw new Error("Could not convert chats to JSON.");
+      console.errorThrow("ChatHub.getJson", "Could not convert chats to JSON.");
     }
   }
 
@@ -289,7 +289,7 @@ class Chat {
 
     // error handling
     else {
-      throw new Error("openai.Chatter.ask: arguments not recognized.");
+      console.errorThrow("Chatter.ask", "Arguments not recognized.");
     }
   }
 
@@ -333,7 +333,7 @@ class Chat {
 
     // error handling
     else {
-      throw new Error("openai.Chatter.addMessage: arguments not recognized.");
+      console.errorThrow("Chatter.addMessage", "Arguments not recognized.");
     }
   }
 
@@ -450,7 +450,7 @@ async function chatCompletion(messages, params = {}, errorRetryCount = 0) {
       response = await __chatCompletion(messages, params);
       break;
     } catch (error) {
-      if (i === errorRetryCount) throw error;
+      if (i === errorRetryCount) console.errorThrow("chatCompletion", error);
     }
   }
   return response;

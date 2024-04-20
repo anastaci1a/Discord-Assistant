@@ -17,7 +17,7 @@ async function initialize() {
       const initialized = await service.initialize();
       if (initialized) successes++;
     } catch (error) {
-      console.log("Error during google services authentication.\n", error);
+      console.errorThrow("initialize", "Error during google services authentication.", error);
       break;
     }
   }
@@ -25,7 +25,7 @@ async function initialize() {
   if (services.length == successes) {
     console.log("Authenticated...");
   } else {
-    console.log("Authentication could not be completed.");
+    console.errorThrow("initialize", "Authentication could not be completed.");
   }
 }
 

@@ -28,7 +28,7 @@ export async function parseMessage(message, botDiscordData) {
   };
 
   // parse channelId into accessable channel object
-  r.channel = await client.channels.fetch(r.channelId).catch(console.error);
+  r.channel = await client.channels.fetch(r.channelId).catch(error => console.errorThrow("parseMessage", error));
   // r.channelName = r.channel.name;
 
   // parse all instances of channel mentions into readable text
@@ -37,7 +37,7 @@ export async function parseMessage(message, botDiscordData) {
     if (channelMatches) {
       for (const match of channelMatches) {
         const channelId = match.slice(2, -1);
-        const channel = await client.channels.fetch(channelId).catch(console.error);
+        const channel = await client.channels.fetch(channelId).catch(error => console.errorThrow("parseMessage", error));
         if (channel) {
           r.content = r.content.replace(match, `#${channel.name}`);
         }
@@ -51,7 +51,7 @@ export async function parseMessage(message, botDiscordData) {
     if (userMatches) {
       for (const match of userMatches) {
         const userId = match.replace(/[<@!>]/g, '');
-        const user = await client.users.fetch(userId).catch(console.error);
+        const user = await client.users.fetch(userId).catch(error => console.errorThrow("parseMessage", error));
         if (user) {
           r.content = r.content.replace(match, `@${user.username}`);
         }

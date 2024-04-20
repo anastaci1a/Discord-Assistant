@@ -15,7 +15,7 @@ async function startServices() {
     try {
       await service.initialize();
     } catch (error) {
-      console.log("error during services initialization", error);
+      console.errorThrow("startServices", "Error during services initialization.", error);
       break;
     }
   }

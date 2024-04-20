@@ -38,7 +38,7 @@ async function getOAuthClient(SCOPES, TOKEN_PATH, SECRET_PATH) {
       // Token is valid, not expired
       oAuth2Client.setCredentials(token);
     }
-  } catch (err) {
+  } catch (error) {
     // Token might not exist, prompting for new auth flow
     await getAccessToken(oAuth2Client, SCOPES, TOKEN_PATH);
   }
